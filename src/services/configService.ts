@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@/lib/tauri-proxy";
 import { ModelProvider, Profile, ProviderConfig } from '@/types/config';
 
 export class ConfigService {

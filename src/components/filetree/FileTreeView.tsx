@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { UnlistenFn, invoke, listen } from "@/lib/tauri-proxy";
+import type { TauriEvent } from "@/lib/tauri-proxy";
 import { useSettingsStore } from "@/stores/SettingsStore";
 import { useFolderStore } from "@/stores/FolderStore";
 import { useContextFilesStore } from "@/stores/ContextFilesStore";
@@ -176,12 +176,14 @@ export function FileTree({
   useEffect(() => {
     let unlisten: UnlistenFn | null = null;
     const setup = async () => {
-      unlisten = await listen<{ path: string; kind: string }>("fs_change", async (event) => {
-        const changedPath = event.payload.path;
-        // Compare against canonical root
-        if (canonicalCurrent && changedPath.startsWith(canonicalCurrent)) {
-          if (currentFolder) loadDirectory(currentFolder);
-        }
+      unlisten = await listen<{ path: string; kind: string }>(
+        "fs_change",
+        async (event: TauriEvent<{ path: string; kind: string }>) => {
+          const changedPath = event.payload.path;
+          // Compare against canonical root
+          if (canonicalCurrent && changedPath.startsWith(canonicalCurrent)) {
+            if (currentFolder) loadDirectory(currentFolder);
+          }
 
         // Bump refresh keys based on canonical mapping where available
         setRefreshMap((prev) => {
@@ -194,7 +196,8 @@ export function FileTree({
           });
           return next;
         });
-      });
+        },
+      );
     };
     setup();
     return () => { if (unlisten) unlisten(); };

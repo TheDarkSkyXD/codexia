@@ -10,9 +10,9 @@ mod utils;
 
 use commands::{
     approve_execution, approve_patch, check_codex_version, close_session, delete_session_file,
-    find_rollout_path_for_session, get_latest_session_id, get_running_sessions, get_session_files,
-    load_sessions_from_disk, pause_session, read_history_file, read_session_file, send_message,
-    start_codex_session,
+    disable_remote_ui, enable_remote_ui, find_rollout_path_for_session, get_latest_session_id,
+    get_remote_ui_status, get_running_sessions, get_session_files, load_sessions_from_disk,
+    pause_session, read_history_file, read_session_file, send_message, start_codex_session,
 };
 use config::{
     add_or_update_model_provider, add_or_update_profile, delete_profile, ensure_default_providers,
@@ -30,7 +30,7 @@ use filesystem::{
     watch::{start_watch_directory, stop_watch_directory},
 };
 use mcp::{add_mcp_server, delete_mcp_server, read_mcp_servers};
-use state::CodexState;
+use state::{CodexState, RemoteAccessState};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -56,7 +56,9 @@ pub fn run() {
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_remote_ui::init())
         .manage(CodexState::new())
+        .manage(RemoteAccessState::default())
         .invoke_handler(tauri::generate_handler![
             start_codex_session,
             send_message,
@@ -103,6 +105,9 @@ pub fn run() {
             delete_profile,
             add_or_update_model_provider,
             ensure_default_providers,
+            enable_remote_ui,
+            disable_remote_ui,
+            get_remote_ui_status,
         ])
         .setup(|_app| {
             tauri::async_runtime::spawn(async {

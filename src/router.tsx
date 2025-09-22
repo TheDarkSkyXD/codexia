@@ -10,6 +10,7 @@ import { useDeepLink } from "./hooks/useDeepLink";
 import { useEffect } from "react";
 import { useLayoutStore } from "./stores/layoutStore";
 import { useAuth } from "./hooks/useAuth";
+import { isRemoteRuntime } from "@/lib/tauri-proxy";
 
 function Root() {
   if (!import.meta.env.DEV) {
@@ -28,8 +29,8 @@ function Root() {
 function RequireAuth() {
   const { user, loading } = useAuth();
 
-  // In development, only skip if auth is not forced
-  if (import.meta.env.DEV) {
+  // Skip authentication when running in development or remote bridge contexts
+  if (import.meta.env.DEV || isRemoteRuntime()) {
     return <Outlet />;
   }
 

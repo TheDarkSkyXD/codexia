@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@/lib/tauri-proxy";
 import { CodexConfig } from '@/types/codex';
 import { useFolderStore } from '@/stores/FolderStore';
 import { useProvidersStore } from '@/stores/ProvidersStore';

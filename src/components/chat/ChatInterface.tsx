@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/lib/tauri-proxy";
 import { ApprovalRequest } from "@/types/codex";
 import type { Conversation } from "@/types/chat";
 import { useConversationStore } from "@/stores/ConversationStore";

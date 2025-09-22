@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { UnlistenFn, invoke, listen } from "@/lib/tauri-proxy";
+import type { TauriEvent } from "@/lib/tauri-proxy";
 import { Button } from "@/components/ui/button";
 import { X, Copy, Check, Send, FileText, GitBranch, Code } from "lucide-react";
 import { CodeEditor } from "./CodeEditor";
@@ -241,19 +241,22 @@ export function FileViewer({ filePath, onClose, addToNotepad }: FileViewerProps)
   useEffect(() => {
     let unlisten: UnlistenFn | null = null;
     const setup = async () => {
-      unlisten = await listen<{ path: string; kind: string }>("fs_change", async (event) => {
-        const changed = event.payload.path;
-        if (!filePath) return;
-        const target = canonicalFile || filePath;
-        if (changed === target) {
-          // If user hasn’t modified content, auto-reload; otherwise show a banner
-          if (currentContent === content) {
-            await loadFile();
-          } else {
-            setDiskChanged(true);
+      unlisten = await listen<{ path: string; kind: string }>(
+        "fs_change",
+        async (event: TauriEvent<{ path: string; kind: string }>) => {
+          const changed = event.payload.path;
+          if (!filePath) return;
+          const target = canonicalFile || filePath;
+          if (changed === target) {
+            // If user hasn’t modified content, auto-reload; otherwise show a banner
+            if (currentContent === content) {
+              await loadFile();
+            } else {
+              setDiskChanged(true);
+            }
           }
-        }
-      });
+        },
+      );
     };
     setup();
     return () => { if (unlisten) unlisten(); };

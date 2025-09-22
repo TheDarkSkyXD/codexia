@@ -15,7 +15,7 @@ import { useConversationStore } from "@/stores/ConversationStore";
 import { useCodexStore } from "@/stores/CodexStore";
 import { useChatInputStore } from "@/stores/chatInputStore";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/lib/tauri-proxy";
 import { GitBranch, Files, Bot, NotebookPen, Image } from "lucide-react";
 import { NoteList } from "@/components/notes";
 import { WebPreview } from "@/components/WebPreview";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/lib/tauri-proxy";
 import {
   Card,
   CardContent,

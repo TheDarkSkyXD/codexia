@@ -10,7 +10,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
       <RouterProvider router={router} />
-      <UpdateChecker />
+      {import.meta.env.PROD && <UpdateChecker />}
     </ThemeProvider>
   </React.StrictMode>,
 );

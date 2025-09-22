@@ -1,12 +1,13 @@
 use crate::protocol::CodexConfig;
-use crate::services::{codex, session};
-use crate::state::CodexState;
+use crate::services::{codex, remote, session};
+use crate::state::{CodexState, RemoteAccessState, RemoteUiStatus};
 use crate::utils::file::{get_sessions_path, scan_jsonl_files};
 use std::fs;
 use tauri::{AppHandle, State};
 
 // Re-export types for external use
 pub use crate::services::session::Conversation;
+pub use remote::RemoteUiConfigPayload;
 
 #[tauri::command]
 pub async fn load_sessions_from_disk() -> Result<Vec<Conversation>, String> {
@@ -134,4 +135,29 @@ pub async fn find_rollout_path_for_session(session_uuid: String) -> Result<Optio
         });
 
     Ok(rollout_path)
+}
+
+#[tauri::command]
+pub async fn enable_remote_ui(
+    app: AppHandle,
+    state: State<'_, RemoteAccessState>,
+    config: RemoteUiConfigPayload,
+) -> Result<RemoteUiStatus, String> {
+    remote::start_remote_ui(app, state, config).await
+}
+
+#[tauri::command]
+pub async fn disable_remote_ui(
+    app: AppHandle,
+    state: State<'_, RemoteAccessState>,
+) -> Result<RemoteUiStatus, String> {
+    remote::stop_remote_ui(app, state).await
+}
+
+#[tauri::command]
+pub async fn get_remote_ui_status(
+    app: AppHandle,
+    state: State<'_, RemoteAccessState>,
+) -> Result<RemoteUiStatus, String> {
+    remote::get_remote_ui_status(app, state).await
 }

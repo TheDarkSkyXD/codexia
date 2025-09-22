@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/lib/tauri-proxy";
 import { useFolderStore } from "@/stores/FolderStore";
 import { RefreshCw, GitBranch, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -40,6 +40,13 @@ export default function SettingsSidebar({
         Working Directory
       </Button>
       <Button
+        variant={activeSection === "remoteAccess" ? "default" : "ghost"}
+        className="w-full justify-start"
+        onClick={() => onSectionChange("remoteAccess")}
+      >
+        Remote Access
+      </Button>
+      <Button
         variant={activeSection === "exclude" ? "default" : "ghost"}
         className="w-full justify-start"
         onClick={() => onSectionChange("exclude")}

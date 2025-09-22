@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/lib/tauri-proxy";
 
 export function useFileTokens() {
   const [tokenCache, setTokenCache] = useState<Map<string, number>>(new Map());

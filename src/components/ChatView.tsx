@@ -6,7 +6,7 @@ import type { Conversation } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { ConversationCategoryDialog } from "@/components/chat/ConversationCategoryDialog";
 import { ResumeSessionsDialog } from "@/components/chat/ResumeSessionsDialog";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/lib/tauri-proxy";
 import { useFolderStore } from "@/stores/FolderStore";
 
 interface ChatViewProps {

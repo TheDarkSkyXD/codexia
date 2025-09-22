@@ -1,11 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { listen } from '@tauri-apps/api/event';
+import { listen } from "@/lib/tauri-proxy";
+import type { TauriEvent } from "@/lib/tauri-proxy";
 import { CodexEvent, ApprovalRequest } from '@/types/codex';
 import { useConversationStore } from '../stores/ConversationStore';
 import { StreamController, StreamControllerSink } from '@/utils/streamController';
 import { generateUniqueId } from '@/utils/genUniqueId';
 import { ChatMessage } from '@/types/chat';
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@/lib/tauri-proxy";
 import { useEphemeralStore } from '@/stores/EphemeralStore';
 
 interface UseCodexEventsProps {
@@ -527,7 +528,7 @@ export const useCodexEvents = ({
     if (!sessionId) return;
 
     // Listen to the global codex-events channel - process all events for approval to work
-    const eventUnlisten = listen<CodexEvent>("codex-events", (event) => {
+    const eventUnlisten = listen<CodexEvent>("codex-events", (event: TauriEvent<CodexEvent>) => {
       const codexEvent = event.payload;
       
       // Log non-delta events for debugging
@@ -538,8 +539,10 @@ export const useCodexEvents = ({
     });
     
     // Listen to raw events that failed structured parsing - process all events for approval to work
-    const rawEventUnlisten = listen<{type: string, session_id: string, data: any}>("codex-raw-events", (event) => {
-      const rawEvent = event.payload;
+    const rawEventUnlisten = listen<{type: string, session_id: string, data: any}>(
+      "codex-raw-events",
+      (event: TauriEvent<{ type: string; session_id: string; data: any }>) => {
+        const rawEvent = event.payload;
       
       const rawMsgType = rawEvent.data.msg.type
       if (rawMsgType !== 'exec_command_output_delta') {
@@ -603,7 +606,8 @@ export const useCodexEvents = ({
         
         handleCodexEvent(convertedEvent);
       }
-    });
+      },
+    );
     
     // Cleanup function
     return () => {
