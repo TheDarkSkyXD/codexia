@@ -1,6 +1,5 @@
 use serde_json;
 use tauri::{AppHandle, Emitter, Manager};
-use tauri_remote_ui::EmitterExt;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdout};
 
