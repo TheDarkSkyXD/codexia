@@ -480,9 +480,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           isLoading={isLoading}
           isPendingNewConversation={pendingNewConversation || !sessionId.trim()}
           onApproval={handleApproval}
+          fileDiffs={fileDiffMap}
         />
-
-        {/* Compact latest changes summary + collapsible diff */}
+        
         <ChangesSummary diffs={fileDiffMap} />
 
         <ChatInput

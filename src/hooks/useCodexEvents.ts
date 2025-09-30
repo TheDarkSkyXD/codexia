@@ -125,14 +125,8 @@ export const useCodexEvents = ({ sessionId, onStopStreaming }: UseCodexEventsPro
     const rawEventUnlisten = listen<RawCodexEventPayload>("codex-raw-events", (event) => {
       const rawEvent = event.payload;
 
-      const rawMsgType = rawEvent.data.msg.type;
-      if (
-        rawMsgType !== "exec_command_output_delta" &&
-        rawMsgType !== "agent_reasoning_delta" &&
-        rawMsgType !== "agent_reasoning_raw_content_delta"
-      ) {
-        console.log(`📨 Raw codex event [${sessionId}]:`, rawEvent.data);
-      }
+      // const rawMsgType = rawEvent.data.msg.type;
+      console.log(`📨 Raw codex event [${sessionId}]:`, rawEvent.data);
 
       const convertedEvent = normalizeRawEvent(rawEvent);
       if (!convertedEvent) {
@@ -141,6 +135,7 @@ export const useCodexEvents = ({ sessionId, onStopStreaming }: UseCodexEventsPro
 
       const context = handlerContextRef.current;
       if (context) {
+        console.log(`📨 Raw codex event handleCodexEvent [${sessionId}]:`, rawEvent.data);
         handleCodexEvent(convertedEvent, context);
       }
     });
