@@ -1,6 +1,12 @@
 import { generateUniqueId } from "@/utils/genUniqueId";
 import type { ChatMessage } from "@/types/chat";
 import type { CodexEventHandler } from "./types";
+import {
+  applyWorktreeDiffUpdate,
+  beginWorktreeSnapshot,
+  resolveSnapshot,
+} from "./diffUtils";
+import { snapshotWorktreeSummary } from "@/services/diffService";
 
 const handleExecCommandBegin: CodexEventHandler = (event, context) => {
   if (event.msg.type !== "exec_command_begin") {
@@ -11,6 +17,7 @@ const handleExecCommandBegin: CodexEventHandler = (event, context) => {
     addMessageToStore,
     currentCommandMessageId,
     currentCommandInfo,
+    currentCommandSnapshot,
   } = context;
 
   const cmdMessageId = `${sessionId}-cmd-${generateUniqueId()}`;
@@ -29,13 +36,22 @@ const handleExecCommandBegin: CodexEventHandler = (event, context) => {
     eventType: event.msg.type,
   };
   addMessageToStore(commandMessage);
+
+  beginWorktreeSnapshot(sessionId, currentCommandSnapshot);
 };
 
 const handleExecCommandEnd: CodexEventHandler = (event, context) => {
   if (event.msg.type !== "exec_command_end") {
     return;
   }
-  const { sessionId, currentCommandMessageId, currentCommandInfo, updateMessage } = context;
+  const {
+    sessionId,
+    currentCommandMessageId,
+    currentCommandInfo,
+    updateMessage,
+    lastTurnDiffRef,
+    currentCommandSnapshot,
+  } = context;
   const messageId = currentCommandMessageId.current;
   const info = currentCommandInfo.current;
   if (!messageId || !info) {
@@ -59,6 +75,16 @@ const handleExecCommandEnd: CodexEventHandler = (event, context) => {
 
   currentCommandMessageId.current = null;
   currentCommandInfo.current = null;
+
+  void (async () => {
+    const before = await resolveSnapshot(sessionId, currentCommandSnapshot);
+    const after = await snapshotWorktreeSummary(sessionId);
+    if (currentCommandSnapshot) {
+      currentCommandSnapshot.current = null;
+    }
+    await applyWorktreeDiffUpdate(sessionId, before, after);
+    lastTurnDiffRef.current = null;
+  })();
 };
 
 const noopHandler: CodexEventHandler = () => {};

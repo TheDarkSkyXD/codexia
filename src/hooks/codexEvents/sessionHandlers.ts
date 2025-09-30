@@ -36,6 +36,8 @@ const handleTaskStarted: CodexEventHandler = (event, context) => {
     currentStreamingMessageId,
     currentReasoningMessageId,
     reasoningBufferRef,
+    currentCommandSnapshot,
+    currentPatchSnapshot,
   } = context;
 
   setSessionLoading(sessionId, true);
@@ -43,6 +45,12 @@ const handleTaskStarted: CodexEventHandler = (event, context) => {
   currentStreamingMessageId.current = null;
   currentReasoningMessageId.current = null;
   reasoningBufferRef.current = "";
+  if (currentCommandSnapshot) {
+    currentCommandSnapshot.current = null;
+  }
+  if (currentPatchSnapshot) {
+    currentPatchSnapshot.current = null;
+  }
 };
 
 const handleTaskCompleted: CodexEventHandler = (event, context) => {
@@ -57,6 +65,8 @@ const handleTaskCompleted: CodexEventHandler = (event, context) => {
     currentReasoningMessageId,
     reasoningBufferRef,
     updateMessage,
+    currentCommandSnapshot,
+    currentPatchSnapshot,
   } = context;
 
   setSessionLoading(sessionId, false);
@@ -69,6 +79,12 @@ const handleTaskCompleted: CodexEventHandler = (event, context) => {
     currentReasoningMessageId.current = null;
   }
   reasoningBufferRef.current = "";
+  if (currentCommandSnapshot) {
+    currentCommandSnapshot.current = null;
+  }
+  if (currentPatchSnapshot) {
+    currentPatchSnapshot.current = null;
+  }
 };
 
 const handleError: CodexEventHandler = (event, context) => {
@@ -145,6 +161,8 @@ const handleTurnAborted: CodexEventHandler = (event, context) => {
     currentCommandMessageId,
     currentCommandInfo,
     onStopStreaming,
+    currentCommandSnapshot,
+    currentPatchSnapshot,
   } = context;
 
   const abortMessage: ChatMessage = {
@@ -172,6 +190,13 @@ const handleTurnAborted: CodexEventHandler = (event, context) => {
   if (currentCommandMessageId.current) {
     currentCommandMessageId.current = null;
     currentCommandInfo.current = null;
+  }
+
+  if (currentCommandSnapshot) {
+    currentCommandSnapshot.current = null;
+  }
+  if (currentPatchSnapshot) {
+    currentPatchSnapshot.current = null;
   }
 
   if (onStopStreaming) {

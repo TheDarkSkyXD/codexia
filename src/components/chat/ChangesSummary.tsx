@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { DiffViewer } from "@/components/filetree/DiffViewer";
+import { DiffEntry } from "@/stores/EphemeralStore";
 
 interface ChangesSummaryProps {
   // sessionId -> filePath map resolved upstream; we only need one session's map
-  diffs?: Record<string, { unified: string; updatedAt: number }>;
+  diffs?: Record<string, DiffEntry>;
 }
 
 // Compact latest changes summary + collapsible unified diffs per file
@@ -11,15 +12,16 @@ export const ChangesSummary: React.FC<ChangesSummaryProps> = ({ diffs }) => {
   const [expandedFiles, setExpandedFiles] = useState<Record<string, boolean>>({});
 
   const parsedFiles = useMemo(() => {
-    const out: { file: string; unified: string; hunk?: string }[] = [];
+    const out: { file: string; unified: string; hunk?: string; updatedAt: number }[] = [];
     const map = diffs || {};
-    for (const [file, obj] of Object.entries(map)) {
+    for (const [fileKey, obj] of Object.entries(map)) {
       const unified = obj.unified;
       const hunk = unified.split('\n').find((l) => l.startsWith('@@')) || undefined;
-      out.push({ file, unified, hunk });
+      const display = obj.displayPath || fileKey;
+      out.push({ file: display, unified, hunk, updatedAt: obj.updatedAt });
     }
     // Recent first
-    out.sort((a, b) => ((diffs?.[b.file]?.updatedAt || 0) - (diffs?.[a.file]?.updatedAt || 0)));
+    out.sort((a, b) => (b.updatedAt - a.updatedAt));
     return out;
   }, [diffs]);
 
@@ -54,4 +56,3 @@ export const ChangesSummary: React.FC<ChangesSummaryProps> = ({ diffs }) => {
     </div>
   );
 };
-

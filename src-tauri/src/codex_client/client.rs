@@ -157,4 +157,8 @@ impl CodexClient {
     pub fn is_active(&self) -> bool {
         self.process_manager.is_active()
     }
+
+    pub fn working_directory(&self) -> &str {
+        &self.config.working_directory
+    }
 }

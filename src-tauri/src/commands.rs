@@ -1,5 +1,6 @@
 use crate::protocol::CodexConfig;
 use crate::services::{codex, session};
+use crate::services::codex::{DiffTargetPayload, WorktreeSummary};
 use crate::state::CodexState;
 use crate::utils::file::{get_sessions_path, scan_jsonl_files};
 use std::fs;
@@ -66,6 +67,40 @@ pub async fn close_session(state: State<'_, CodexState>, session_id: String) -> 
 #[tauri::command]
 pub async fn get_running_sessions(state: State<'_, CodexState>) -> Result<Vec<String>, String> {
     codex::get_running_sessions(state).await
+}
+
+#[tauri::command]
+pub async fn collect_worktree_diff(
+    state: State<'_, CodexState>,
+    session_id: String,
+) -> Result<String, String> {
+    codex::collect_worktree_diff(state, session_id).await
+}
+
+#[tauri::command]
+pub async fn collect_worktree_diff_subset(
+    state: State<'_, CodexState>,
+    session_id: String,
+    targets: Vec<DiffTargetPayload>,
+) -> Result<String, String> {
+    codex::collect_worktree_diff_subset(state, session_id, targets).await
+}
+
+#[tauri::command]
+pub async fn revert_file_diff(
+    state: State<'_, CodexState>,
+    session_id: String,
+    diff_patch: String,
+) -> Result<(), String> {
+    codex::revert_file_diff(state, session_id, diff_patch).await
+}
+
+#[tauri::command]
+pub async fn snapshot_worktree_summary(
+    state: State<'_, CodexState>,
+    session_id: String,
+) -> Result<WorktreeSummary, String> {
+    codex::snapshot_worktree_summary(state, session_id).await
 }
 
 #[tauri::command]

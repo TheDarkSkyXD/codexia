@@ -9,10 +9,11 @@ mod state;
 mod utils;
 
 use commands::{
-    approve_execution, approve_patch, check_codex_version, close_session, create_new_window,
-    delete_session_file, find_rollout_path_for_session, get_latest_session_id,
-    get_running_sessions, get_session_files, load_sessions_from_disk, pause_session,
-    read_history_file, read_session_file, send_message, start_codex_session,
+    approve_execution, approve_patch, check_codex_version, close_session, collect_worktree_diff,
+    collect_worktree_diff_subset, create_new_window, delete_session_file,
+    find_rollout_path_for_session, get_latest_session_id, get_running_sessions, get_session_files,
+    load_sessions_from_disk, pause_session, read_history_file, read_session_file,
+    revert_file_diff, send_message, snapshot_worktree_summary, start_codex_session,
 };
 use config::{
     add_or_update_model_provider, add_or_update_profile, delete_profile, ensure_default_providers,
@@ -81,6 +82,10 @@ pub fn run() {
             read_history_file,
             find_rollout_path_for_session,
             check_codex_version,
+            collect_worktree_diff,
+            collect_worktree_diff_subset,
+            revert_file_diff,
+            snapshot_worktree_summary,
             create_new_window,
             read_directory,
             get_default_directories,

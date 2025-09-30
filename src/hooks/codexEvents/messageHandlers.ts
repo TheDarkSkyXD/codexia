@@ -3,6 +3,12 @@ import { useEphemeralStore } from "@/stores/EphemeralStore";
 import type { ChatMessage } from "@/types/chat";
 import type { CodexEvent } from "@/types/codex";
 import type { CodexEventHandler } from "./types";
+import {
+  applyWorktreeDiffUpdate,
+  beginWorktreeSnapshot,
+  resolveSnapshot,
+} from "./diffUtils";
+import { snapshotWorktreeSummary } from "@/services/diffService";
 
 const noopHandler: CodexEventHandler = () => {};
 
@@ -198,6 +204,30 @@ const handleTurnDiff: CodexEventHandler = (event, context) => {
   } catch {}
 };
 
+const handlePatchApplyBegin: CodexEventHandler = (event, context) => {
+  if (event.msg.type !== "patch_apply_begin") {
+    return;
+  }
+  const { sessionId, currentPatchSnapshot } = context;
+  beginWorktreeSnapshot(sessionId, currentPatchSnapshot);
+};
+
+const handlePatchApplyEnd: CodexEventHandler = (event, context) => {
+  if (event.msg.type !== "patch_apply_end") {
+    return;
+  }
+  const { sessionId, lastTurnDiffRef, currentPatchSnapshot } = context;
+  void (async () => {
+    const before = await resolveSnapshot(sessionId, currentPatchSnapshot);
+    const after = await snapshotWorktreeSummary(sessionId);
+    if (currentPatchSnapshot) {
+      currentPatchSnapshot.current = null;
+    }
+    await applyWorktreeDiffUpdate(sessionId, before, after);
+    lastTurnDiffRef.current = null;
+  })();
+};
+
 export const messageHandlers: Record<string, CodexEventHandler> = {
   agent_message: handleAgentMessage,
   agent_reasoning: noopHandler,
@@ -208,8 +238,8 @@ export const messageHandlers: Record<string, CodexEventHandler> = {
   plan_update: handlePlanUpdate,
   mcp_tool_call_begin: handleToolCallBegin,
   mcp_tool_call_end: noopHandler,
-  patch_apply_begin: noopHandler,
-  patch_apply_end: noopHandler,
+  patch_apply_begin: handlePatchApplyBegin,
+  patch_apply_end: handlePatchApplyEnd,
   web_search_begin: handleWebSearchBegin,
   web_search_end: noopHandler,
   agent_message_delta: handleAgentMessageDelta,

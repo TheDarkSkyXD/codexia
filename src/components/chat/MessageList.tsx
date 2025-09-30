@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Copy,
   Check,
+  Loader2,
 } from "lucide-react";
 import type { ChatMessage as ChatMessageType } from "@/types/chat";
 import type { ApprovalRequest } from "@/types/codex";
@@ -17,8 +18,11 @@ import { Message } from "./Message";
 import { useTextSelection } from "../../hooks/useTextSelection";
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import { Link } from "react-router-dom";
 import { DiffViewer } from "@/components/filetree/DiffViewer";
+import { useDiffActions } from "@/hooks/useDiffActions";
+import { DiffEntry } from "@/stores/EphemeralStore";
 // Note: No external links or logos in empty state; show key features instead.
 
 // Unified message type
@@ -41,7 +45,7 @@ interface MessageListProps {
   tokenUsage?: TokenUsage;
   sessionId?: string;
   model?: string;
-  fileDiffs?: Record<string, { unified: string; updatedAt: number }>;
+  fileDiffs?: Record<string, DiffEntry>;
 }
 
 export function MessageList({
@@ -49,6 +53,7 @@ export function MessageList({
   className = "",
   isLoading = false,
   onApproval,
+  sessionId,
   fileDiffs,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,6 +65,7 @@ export function MessageList({
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const copyResetTimeout = useRef<number | null>(null);
   const { selectedText } = useTextSelection();
+  const { pendingRestores, restoreDiff } = useDiffActions(sessionId);
   // Four feature cards based on README.md
   const features = [
     {
@@ -115,7 +121,7 @@ export function MessageList({
         }
       });
 
-      const filePath = fileKey.replace(/^([ab]\/)*/, "");
+      const filePath = payload.displayPath || fileKey.replace(/^([ab]\/)*/, "");
 
       return {
         key: fileKey,
@@ -124,6 +130,7 @@ export function MessageList({
         deletions,
         unified,
         updatedAt: payload.updatedAt || 0,
+        entry: payload,
       };
     });
 
@@ -399,12 +406,13 @@ export function MessageList({
               <div className="space-y-2">
                 {turnDiffEntries.map((entry) => {
                   const expanded = !!expandedDiffs[entry.key];
+                  const isRestoring = pendingRestores?.[entry.key] ?? false;
                   return (
                     <div
                       key={entry.key}
                       className="rounded-lg border border-border bg-background/90 shadow-sm"
                     >
-                      <div className="flex items-center justify-between gap-2 px-3 py-2">
+                      <div className="flex items-center justify-between gap-2 px-3">
                         <div className="flex min-w-0 flex-1 items-center gap-3">
                           <span
                             className="truncate font-mono text-sm text-foreground"
@@ -412,6 +420,9 @@ export function MessageList({
                           >
                             {entry.filePath || "unknown file"}
                           </span>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {entry.entry.changeType}
+                          </Badge>
                           <div className="flex items-center gap-2 text-xs">
                             <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                               +{entry.additions}
@@ -422,6 +433,31 @@ export function MessageList({
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 hidden"
+                            disabled={isRestoring}
+                            onClick={async () => {
+                              const success = await restoreDiff(entry.key, entry.entry);
+                              if (success) {
+                                setExpandedDiffs((prev) => {
+                                  const next = { ...prev };
+                                  delete next[entry.key];
+                                  return next;
+                                });
+                              }
+                            }}
+                          >
+                            {isRestoring ? (
+                              <span className="inline-flex items-center gap-1">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                Restoring
+                              </span>
+                            ) : (
+                              "Restore"
+                            )}
+                          </Button>
                           <button
                             type="button"
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition hover:bg-muted"

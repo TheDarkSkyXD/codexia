@@ -15,7 +15,6 @@ import { Sandbox } from "./Sandbox";
 import { generateUniqueId } from "@/utils/genUniqueId";
 import { ForkOriginBanner } from "./ForkOriginBanner";
 import { useEphemeralStore } from "@/stores/EphemeralStore";
-import { ChangesSummary } from "./ChangesSummary";
 import { ModelSelector } from "./ModelSelector";
 import TokenCountInfo from "@/components/common/TokenCountInfo";
 
@@ -480,10 +479,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           isLoading={isLoading}
           isPendingNewConversation={pendingNewConversation || !sessionId.trim()}
           onApproval={handleApproval}
+          sessionId={activeSessionId}
           fileDiffs={fileDiffMap}
         />
         
-        <ChangesSummary diffs={fileDiffMap} />
+        {/* <ChangesSummary diffs={fileDiffMap} /> */}
 
         <ChatInput
           inputValue={inputValue}

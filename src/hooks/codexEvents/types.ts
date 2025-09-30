@@ -2,6 +2,7 @@ import type { MutableRefObject } from "react";
 import type { CodexEvent } from "@/types/codex";
 import type { ChatMessage } from "@/types/chat";
 import type { StreamController, StreamControllerSink } from "@/utils/streamController";
+import type { SnapshotState } from "./diffUtils";
 
 type SessionMeta = { codexSessionId?: string; resumePath?: string };
 
@@ -27,6 +28,8 @@ export interface CodexEventHandlerContext {
   currentCommandMessageId: MutableRefObject<string | null>;
   currentCommandInfo: MutableRefObject<CommandInfo | null>;
   lastTurnDiffRef: MutableRefObject<string | null>;
+  currentCommandSnapshot: MutableRefObject<SnapshotState | null>;
+  currentPatchSnapshot: MutableRefObject<SnapshotState | null>;
   createStreamSink: (messageId: string) => StreamControllerSink;
 }
 

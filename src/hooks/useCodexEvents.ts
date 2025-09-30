@@ -7,6 +7,7 @@ import { useConversationStore } from "../stores/ConversationStore";
 import { useCodexStore } from "@/stores/CodexStore";
 import { handleCodexEvent } from "./codexEvents/handler";
 import { normalizeRawEvent, type RawCodexEventPayload } from "./codexEvents/normalizeRawEvent";
+import type { SnapshotState } from "./codexEvents/diffUtils";
 import type { CodexEventHandlerContext, UseCodexEventsProps } from "./codexEvents/types";
 
 export const useCodexEvents = ({ sessionId, onStopStreaming }: UseCodexEventsProps) => {
@@ -29,6 +30,8 @@ export const useCodexEvents = ({ sessionId, onStopStreaming }: UseCodexEventsPro
   const currentCommandMessageId = useRef<string | null>(null);
   const currentCommandInfo = useRef<{ command: string[]; cwd: string } | null>(null);
   const lastTurnDiffRef = useRef<string | null>(null);
+  const currentCommandSnapshot = useRef<SnapshotState | null>(null);
+  const currentPatchSnapshot = useRef<SnapshotState | null>(null);
   const handlerContextRef = useRef<CodexEventHandlerContext | null>(null);
 
   const addMessageToStore = useCallback(
@@ -99,6 +102,8 @@ export const useCodexEvents = ({ sessionId, onStopStreaming }: UseCodexEventsPro
     currentCommandMessageId,
     currentCommandInfo,
     lastTurnDiffRef,
+    currentCommandSnapshot,
+    currentPatchSnapshot,
     createStreamSink,
   };
 
